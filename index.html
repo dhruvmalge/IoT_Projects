@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Environmental Data Simulation</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        #chart {
+            max-width: 5000px;
+	    max-height: 700px;
+            margin: auto;
+            margin-bottom: 20px;
+        }
+        h1 {
+            text-align: center;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Environmental Data Simulation</h1>
+    <div class="container">
+        <div id="chart"></div>
+    </div>
+
+    <script>
+        let timeLabels = Array.from({ length: 10 }, (_, i) => i + 1);
+        let weatherData = {
+            temperature: Array(10).fill(0),
+            humidity: Array(10).fill(0),
+            pressure: Array(10).fill(0),
+            cloudCover: Array(10).fill(0),
+            dewPoint: Array(10).fill(0),
+            precipitation: Array(10).fill(0),
+            visibility: Array(10).fill(0),
+            windSpeed: Array(10).fill(0),
+        };
+
+        function drawChart() {
+    const data = [
+        {
+            x: timeLabels,
+            y: weatherData.temperature,
+            z: Array(10).fill(0), // Placeholder for a third dimension
+            type: 'bar3d',
+            name: 'Temperature (°C)',
+        },
+        {
+            x: timeLabels,
+            y: weatherData.humidity,
+            z: Array(10).fill(1), // Different level for humidity
+            type: 'bar3d',
+            name: 'Humidity (%)',
+        },
+        {
+            x: timeLabels,
+            y: weatherData.pressure,
+            z: Array(10).fill(2), // Different level for pressure
+            type: 'bar3d',
+            name: 'Pressure (hPa)',
+        },
+        {
+            x: timeLabels,
+            y: weatherData.cloudCover,
+            z: Array(10).fill(3), // Different level for cloud cover
+            type: 'bar3d',
+            name: 'Cloud Cover (%)',
+        },
+        {
+            x: timeLabels,
+            y: weatherData.dewPoint,
+            z: Array(10).fill(4), // Different level for dew point
+            type: 'bar3d',
+            name: 'Dew Point (°C)',
+        },
+        {
+            x: timeLabels,
+            y: weatherData.precipitation,
+            z: Array(10).fill(5), // Different level for precipitation
+            type: 'bar3d',
+            name: 'Precipitation (mm)',
+        },
+        {
+            x: timeLabels,
+            y: weatherData.visibility,
+            z: Array(10).fill(6), // Different level for visibility
+            type: 'bar3d',
+            name: 'Visibility (km)',
+        },
+        {
+            x: timeLabels,
+            y: weatherData.windSpeed,
+            z: Array(10).fill(7), // Different level for wind speed
+            type: 'bar3d',
+            name: 'Wind Speed (km/h)',
+        },
+    ];
+
+    const layout = {
+        title: '3D Environmental Data',
+        scene: {
+            xaxis: { title: 'Time' },
+            yaxis: { title: 'Value' },
+            zaxis: { title: 'Metrics' },
+        },
+        barmode: 'overlay', // Overlay to visualize all metrics together
+    };
+
+    Plotly.newPlot('chart', data, layout);
+}
+
+        function updateData() {
+            fetch('/data')
+                .then(response => {
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    return response.json();
+                })
+                .then(newData => {
+                    // Shift old data and add new data
+                    weatherData.temperature.shift();
+                    weatherData.temperature.push(newData.temperature);
+
+                    weatherData.humidity.shift();
+                    weatherData.humidity.push(newData.humidity);
+
+                    weatherData.pressure.shift();
+                    weatherData.pressure.push(newData.pressure);
+
+                    weatherData.cloudCover.shift();
+                    weatherData.cloudCover.push(newData['cloud cover']);
+
+                    weatherData.dewPoint.shift();
+                    weatherData.dewPoint.push(newData['dew point']);
+
+                    weatherData.precipitation.shift();
+                    weatherData.precipitation.push(newData.precipitation);
+
+                    weatherData.visibility.shift();
+                    weatherData.visibility.push(newData.visibility);
+
+                    weatherData.windSpeed.shift();
+                    weatherData.windSpeed.push(newData['wind speed']);
+
+                    drawChart(); // Redraw the chart with updated data
+                })
+                .catch(error => console.error('Error fetching data:', error));
+        }
+
+        setInterval(updateData, 2000); // Update every 2 seconds
+        drawChart(); // Initial draw
+    </script>
+</body>
+</html>
